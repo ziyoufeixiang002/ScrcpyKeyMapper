@@ -6,6 +6,8 @@
 
 A GUI key mapping utility for [QtScrcpy](https://github.com/barry-ran/QtScrcpy), allowing you to create and manage keyboard bindings for mobile applications and games.
 
+🌐 Also available in: [العربية](README_ar.md) | [中文](README_zh.md)
+
 🔗 [Try it live!](https://w4po.github.io/ScrcpyKeyMapper)
 
 ![ScrcpyKeyMapper Screenshot](assets/screenshot.png)
@@ -49,6 +51,11 @@ A GUI key mapping utility for [QtScrcpy](https://github.com/barry-ran/QtScrcpy),
 ## 💝 Support the Project
 
 If you find this tool helpful and want to support me, you can:
+
+- ⭐ Star the project on GitHub
+- 🐛 Report bugs or suggest new features
+- 🔀 Contribute to the project
+- 💰 Make a donation:
 
 [![PayPal](https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://paypal.me/w4po77)
 

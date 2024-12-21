@@ -37,7 +37,8 @@ export class KeyInputManager {
 
         // Add focus styling
         const handleFocus = () => {
-            input.placeholder = 'Press any key...';
+            const t = key => window.languageManager ? window.languageManager.translate(key) : key;
+            input.placeholder = t('press_key_placeholder');
             input.value = '';
             input.classList.add('listening');
             

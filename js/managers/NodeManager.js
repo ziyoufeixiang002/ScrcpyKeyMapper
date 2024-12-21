@@ -83,7 +83,8 @@ export class NodeManager {
         moveBackBtn.addEventListener('click', () => this.moveSelectedNode('back'));
         moveFrontBtn.addEventListener('click', () => this.moveSelectedNode('front'));
         clearAllBtn.addEventListener('click', () => {
-            if (confirm('Are you sure you want to clear all nodes? This action cannot be undone.')) {
+            const t = key => window.languageManager ? window.languageManager.translate(key) : key;
+            if (confirm(t('confirm_delete_all'))) {
                 this.clearAllNodes();
             }
         });
@@ -440,15 +441,19 @@ export class NodeManager {
 
     // Get human-readable type name
     getTypeName(type) {
-        switch (type) {
-            case MAPPING_TYPES.CLICK: return 'Single Click';
-            case MAPPING_TYPES.CLICK_TWICE: return 'Double Click';
-            case MAPPING_TYPES.CLICK_MULTI: return 'Multi Click';
-            case MAPPING_TYPES.DRAG: return 'Drag';
-            case MAPPING_TYPES.STEER_WHEEL: return 'Steering Wheel';
-            case MAPPING_TYPES.MOUSE_MOVE: return 'Mouse Map';
-            default: return type;
-        }
+        const typeKey = (() => {
+            switch (type) {
+                case MAPPING_TYPES.CLICK: return 'type_click';
+                case MAPPING_TYPES.CLICK_TWICE: return 'type_double_click';
+                case MAPPING_TYPES.CLICK_MULTI: return 'type_multi_click';
+                case MAPPING_TYPES.DRAG: return 'type_drag';
+                case MAPPING_TYPES.STEER_WHEEL: return 'type_steer_wheel';
+                case MAPPING_TYPES.MOUSE_MOVE: return 'type_mouse_move';
+                default: return type;
+            }
+        })();
+        
+        return window.languageManager ? window.languageManager.translate(typeKey) : typeKey;
     }
     getTypePositionKeyName(type) {
         switch (type) {
@@ -464,15 +469,18 @@ export class NodeManager {
 
     // Generate HTML content for mapping properties
     getMappingPropertiesContent(node) {
+        const t = key => window.languageManager ? window.languageManager.translate(key) : key;
+        const formatHelp = text => text.replace(/\n/g, '<br>');
+
         switch (node.mappingData.type) {
             case MAPPING_TYPES.CLICK:
                 const clickPos = node.mappingData.pos;
                 return `
                     <div class="mb-3">
-                        <label class="form-label">Single Click</label>
-                        <div class="form-text">Click at the specified position</div>
+                        <label class="form-label">${t('type_click')}</label>
+                        <div class="form-text">${t('click_description')}</div>
                         <div class="mt-2">
-                            <pre class="form-control">Position: (${(clickPos.x).toFixed(3)}, ${(clickPos.y).toFixed(3)})</pre>
+                            <pre class="form-control">${t('position_label')}: (${(clickPos.x).toFixed(3)}, ${(clickPos.y).toFixed(3)})</pre>
                         </div>
                     </div>
                 `;
@@ -481,10 +489,10 @@ export class NodeManager {
                 const doubleClickPos = node.mappingData.pos;
                 return `
                     <div class="mb-3">
-                        <label class="form-label">Double Click</label>
-                        <div class="form-text">Double click at the specified position</div>
+                        <label class="form-label">${t('type_double_click')}</label>
+                        <div class="form-text">${t('double_click_description')}</div>
                         <div class="mt-2">
-                            <pre class="form-control">Position: (${(doubleClickPos.x).toFixed(3)}, ${(doubleClickPos.y).toFixed(3)})</pre>
+                            <pre class="form-control">${t('position_label')}: (${(doubleClickPos.x).toFixed(3)}, ${(doubleClickPos.y).toFixed(3)})</pre>
                         </div>
                     </div>
                 `;
@@ -492,19 +500,14 @@ export class NodeManager {
             case MAPPING_TYPES.CLICK_MULTI:
                 if (node.mappingData.clickNodes) {
                     const clickNodesInfo = node.mappingData.clickNodes
-                        .map(clickNode => `Point ${clickNode.order}: (${(clickNode.pos.x).toFixed(3)}, ${(clickNode.pos.y).toFixed(3)}) - Delay ${clickNode.delay}ms`)
+                        .map(clickNode => `${t('point')} ${clickNode.order}: (${(clickNode.pos.x).toFixed(3)}, ${(clickNode.pos.y).toFixed(3)}) - ${t('delay')} ${clickNode.delay}ms`)
                         .join('\n');
                     
                     return `
                         <div class="mb-3">
-                            <label class="form-label">Multi-Click Points</label>
+                            <label class="form-label">${t('multi_click_points')}</label>
                             <pre class="form-control">${clickNodesInfo}</pre>
-                            <div class="form-text mt-2">
-                                • Right-click to add points<br>
-                                • Double-click points to edit delay<br>
-                                • Drag points to reposition<br>
-                                • Click delete button to remove points
-                            </div>
+                            <div class="form-text mt-2">${formatHelp(t('multi_click_help'))}</div>
                         </div>
                     `;
                 }
@@ -517,27 +520,20 @@ export class NodeManager {
                 const dragSpeed = node.mappingData.dragSpeed || 1;
                 return `
                     <div class="mb-3">
-                        <label class="form-label">Start Delay (ms)</label>
+                        <label class="form-label">${t('start_delay_label')}</label>
                         <input type="number" class="form-control" id="dragStartDelay" value="${startDelay}" min="0" max="2000" step="20">
-                        <div class="form-text mt-2">
-                            • Time to hold before starting drag
-                        </div>
+                        <div class="form-text mt-2">${t('start_delay_help')}</div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Drag Speed</label>
+                        <label class="form-label">${t('drag_speed_label')}</label>
                         <input type="number" class="form-control" id="dragSpeed" value="${dragSpeed}" min="0" max="1" step="0.01">
-                        <div class="form-text mt-2">
-                            • 1 is fastest, 0 is slowest
-                        </div>
+                        <div class="form-text mt-2">${t('drag_speed_help')}</div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Drag Path</label>
-                        <pre class="form-control">Start: (${(startPos.x).toFixed(3)}, ${(startPos.y).toFixed(3)})
-End: (${(endPos.x).toFixed(3)}, ${(endPos.y).toFixed(3)})</pre>
-                        <div class="form-text mt-2">
-                            • Drag endpoints to adjust path<br>
-                            • Path defines mouse movement
-                        </div>
+                        <label class="form-label">${t('drag_path')}</label>
+                        <pre class="form-control">${t('start')}: (${(startPos.x).toFixed(3)}, ${(startPos.y).toFixed(3)})
+${t('end')}: (${(endPos.x).toFixed(3)}, ${(endPos.y).toFixed(3)})</pre>
+                        <div class="form-text mt-2">${formatHelp(t('drag_path_help'))}</div>
                     </div>
                 `;
 
@@ -545,37 +541,32 @@ End: (${(endPos.x).toFixed(3)}, ${(endPos.y).toFixed(3)})</pre>
                 const centerPos = node.mappingData.centerPos;
                 return `
                     <div class="mb-3">
-                        <label class="form-label">Steering Wheel</label>
+                        <label class="form-label">${t('steering_wheel')}</label>
                         <div class="mt-2">
-                            <pre class="form-control">Center: (${(centerPos.x).toFixed(3)}, ${(centerPos.y).toFixed(3)})</pre>
+                            <pre class="form-control">${t('center')}: (${(centerPos.x).toFixed(3)}, ${(centerPos.y).toFixed(3)})</pre>
                         </div>
                         <div class="mt-3">
-                            <label class="form-label">Key Bindings</label>
+                            <label class="form-label">${t('key_bindings')}</label>
                             <div class="input-group mb-2">
-                                <span class="input-group-text" style="min-width: 70px;">Up</span>
+                                <span class="input-group-text" style="min-width: 70px;">${t('up')}</span>
                                 <input type="text" class="form-control key-binding" data-direction="up" value="${node.mappingData.upKey || 'Key_W'}" />
-                                <span class="input-group-text">Offset: ${(node.mappingData.upOffset || 0.27).toFixed(3)}</span>
+                                <span class="input-group-text">${t('offset')}: ${(node.mappingData.upOffset || 0.27).toFixed(3)}</span>
                             </div>
                             <div class="input-group mb-2">
-                                <span class="input-group-text" style="min-width: 70px;">Down</span>
+                                <span class="input-group-text" style="min-width: 70px;">${t('down')}</span>
                                 <input type="text" class="form-control key-binding" data-direction="down" value="${node.mappingData.downKey || 'Key_S'}" />
-                                <span class="input-group-text">Offset: ${(node.mappingData.downOffset || 0.2).toFixed(3)}</span>
+                                <span class="input-group-text">${t('offset')}: ${(node.mappingData.downOffset || 0.27).toFixed(3)}</span>
                             </div>
                             <div class="input-group mb-2">
-                                <span class="input-group-text" style="min-width: 70px;">Left</span>
+                                <span class="input-group-text" style="min-width: 70px;">${t('left')}</span>
                                 <input type="text" class="form-control key-binding" data-direction="left" value="${node.mappingData.leftKey || 'Key_A'}" />
-                                <span class="input-group-text">Offset: ${(node.mappingData.leftOffset || 0.1).toFixed(3)}</span>
+                                <span class="input-group-text">${t('offset')}: ${(node.mappingData.leftOffset || 0.27).toFixed(3)}</span>
                             </div>
                             <div class="input-group mb-2">
-                                <span class="input-group-text" style="min-width: 70px;">Right</span>
+                                <span class="input-group-text" style="min-width: 70px;">${t('right')}</span>
                                 <input type="text" class="form-control key-binding" data-direction="right" value="${node.mappingData.rightKey || 'Key_D'}" />
-                                <span class="input-group-text">Offset: ${(node.mappingData.rightOffset || 0.1).toFixed(3)}</span>
+                                <span class="input-group-text">${t('offset')}: ${(node.mappingData.rightOffset || 0.27).toFixed(3)}</span>
                             </div>
-                        </div>
-                        <div class="form-text mt-2">
-                            • Drag center wheel to reposition<br>
-                            • Drag direction buttons to adjust offsets<br>
-                            • Click input fields to change key bindings
                         </div>
                     </div>
                 `;
@@ -588,36 +579,32 @@ End: (${(endPos.x).toFixed(3)}, ${(endPos.y).toFixed(3)})</pre>
                 return `
                     <div>
                         <div class="mb-3">
-                            <label class="form-label">Position</label>
-                            <pre class="form-control">Start: (${(node.mappingData.startPos.x).toFixed(3)}, ${(node.mappingData.startPos.y).toFixed(3)})</pre>
+                            <label class="form-label">${t('position_label')}</label>
+                            <pre class="form-control">${t('start')}: (${(node.mappingData.startPos.x).toFixed(3)}, ${(node.mappingData.startPos.y).toFixed(3)})</pre>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Speed Ratios</label>
+                            <label class="form-label">${t('speed_ratios')}</label>
                             <div class="input-group mb-2">
-                                <span class="input-group-text">X Ratio</span>
+                                <span class="input-group-text">${t('x_ratio')}</span>
                                 <input type="number" step="0.01" min="0.001" class="form-control speed-ratio" data-axis="x" value="${speedRatioX}" />
                             </div>
                             <div class="input-group mb-2">
-                                <span class="input-group-text">Y Ratio</span>
+                                <span class="input-group-text">${t('y_ratio')}</span>
                                 <input type="number" step="0.01" min="0.001" class="form-control speed-ratio" data-axis="y" value="${speedRatioY}" />
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Small Eyes</label>
+                            <label class="form-label">${t('small_eyes')}</label>
                             <div class="form-check mb-2">
                                 <input class="form-check-input" type="checkbox" id="smallEyesEnabled" ${smallEyes.enabled ? 'checked' : ''}>
-                                <label class="form-check-label" for="smallEyesEnabled">Enable smallEyes</label>
+                                <label class="form-check-label" for="smallEyesEnabled">${t('enable_small_eyes')}</label>
                             </div>
                             <div class="input-group">
-                                <span class="input-group-text">Key</span>
+                                <span class="input-group-text">${t('small_eyes_key')}</span>
                                 <input type="text" class="form-control" id="smallEyesKey" value="${smallEyes.key}" ${!smallEyes.enabled ? 'disabled' : ''}>
                             </div>
                         </div>
-                        <div class="form-text mt-2">
-                            • Drag the node to reposition<br>
-                            • Adjust speed ratios to control sensitivity<br>
-                            • Enable smallEyes for additional control
-                        </div>
+                        <div class="form-text mt-2">${formatHelp(t('mouse_move_help'))}</div>
                     </div>
                 `;
 

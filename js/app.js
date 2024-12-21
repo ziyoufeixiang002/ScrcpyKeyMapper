@@ -3,6 +3,7 @@ import { KeyInputManager } from './managers/KeyInputManager.js';
 import { ConfigManager } from './managers/ConfigManager.js';
 import { NodeManager } from './managers/NodeManager.js';
 import { ThemeManager } from './managers/ThemeManager.js';
+import { LanguageManager } from './managers/LanguageManager.js';
 import { MAPPING_TYPES } from './utils/constants.js';
 
 class App {
@@ -43,6 +44,7 @@ class App {
         window.configManager = this.configManager = new ConfigManager(this.nodeManager);
         window.scaleManager = this.scaleManager = new ScaleManager(this.stage, this.layer);
         window.themeManager = this.themeManager = new ThemeManager();
+        window.languageManager = this.languageManager = new LanguageManager();
     }
 
     setupDragAndDrop() {
@@ -326,7 +328,8 @@ class App {
 
         // Handle delete mapping
         document.getElementById('deleteMapping').addEventListener('click', () => {
-            if (this.nodeManager.selectedNode && confirm('Are you sure you want to delete this node?')) {
+            const t = key => window.languageManager ? window.languageManager.translate(key) : key;
+            if (this.nodeManager.selectedNode && confirm(t('confirm_delete'))) {
                 this.nodeManager.deleteSelectedNode();
             }
         });

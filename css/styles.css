@@ -806,3 +806,49 @@ input[type="number"].listening {
 #themeToggle i {
     font-size: 1.2rem;
 }
+
+/* Language Selector Styles */
+#languageSelector {
+    position: relative;
+}
+
+#languageSelector .dropdown-menu {
+    position: absolute;
+    z-index: 1000;
+    right: 0;
+    margin-top: 2px;
+    min-width: 120px;
+    padding: 0 !important;
+    border-radius: 0.375rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+#languageSelector .dropdown-item {
+    padding: 0.5rem 1rem;
+    transition: all 0.2s ease;
+}
+
+#languageSelector .dropdown-item:hover {
+    background-color: var(--hover-bg);
+    transform: translateX(2px);
+}
+
+#languageSelector .dropdown-item.active {
+    background-color: var(--selected-bg);
+    color: var(--text-color);
+}
+
+#languageSelector .flag-icon {
+    font-size: 1.2em;
+    margin-right: 0.75rem;
+    display: inline-block;
+    vertical-align: middle;
+    width: 1.5em;
+    height: 1em;
+    margin-top: -2px;
+}
+
+[dir="rtl"] #languageSelector .flag-icon {
+    margin-right: 0;
+    margin-left: 0.75rem;
+}
