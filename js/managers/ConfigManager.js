@@ -62,23 +62,67 @@ export class ConfigManager {
                 height: background?.getAttr('originalHeight') || this.nodeManager.stage.height()
             };
 
-            // Create a Blob containing the JSON data
-            const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-
-            // Create a temporary link element to trigger the download
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'key-mapping-config.json';
-            document.body.appendChild(link);
-            link.click();
-
-            // Clean up
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
+            // Get remembered filename from localStorage
+            const rememberedName = localStorage.getItem('lastSavedFilename') || 'key-mapping-config.json';
+            
+            // Try to use File System Access API if available
+            if (window.showSaveFilePicker) {
+                this.saveWithFileSystemAccess(config, rememberedName);
+            } else {
+                // Fallback to traditional download method
+                this.saveWithDownload(config, rememberedName);
+            }
         } catch (error) {
             console.error('Error saving configuration:', error);
         }
+    }
+
+    async saveWithFileSystemAccess(config, suggestedName) {
+        try {
+            const handle = await window.showSaveFilePicker({
+                suggestedName: suggestedName,
+                types: [{
+                    description: 'JSON Files',
+                    accept: { 'application/json': ['.json'] }
+                }]
+            });
+
+            const writable = await handle.createWritable();
+            await writable.write(JSON.stringify(config, null, 2));
+            await writable.close();
+
+            // Remember the filename for next time
+            const fileName = handle.name;
+            localStorage.setItem('lastSavedFilename', fileName);
+            
+            // Remember the directory handle for future saves (optional enhancement)
+            // Note: We can't persist the full path due to security restrictions,
+            // but we remember the filename
+        } catch (error) {
+            if (error.name !== 'AbortError') {
+                console.error('Error saving with File System Access API:', error);
+            }
+        }
+    }
+
+    saveWithDownload(config, suggestedName) {
+        // Create a Blob containing the JSON data
+        const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        // Create a temporary link element to trigger the download
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = suggestedName;
+        document.body.appendChild(link);
+        link.click();
+
+        // Clean up
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        // Remember the filename for next time
+        localStorage.setItem('lastSavedFilename', suggestedName);
     }
 
     loadFromJson(file) {
