@@ -22,12 +22,42 @@ export class ConfigManager {
     }
 
     setupConfigButtons() {
-        const saveButton = document.getElementById('saveConfig');
+        const saveButton = document.getElementById('saveConfigBtn');
+        const saveFilenameInput = document.getElementById('saveFilename');
         const loadButton = document.getElementById('loadConfig');
+
+        // Load remembered filename from localStorage
+        const rememberedName = localStorage.getItem('lastSavedFilename');
+        if (rememberedName && saveFilenameInput) {
+            saveFilenameInput.value = rememberedName;
+        }
 
         if (saveButton) {
             saveButton.addEventListener('click', () => {
                 this.saveToJson();
+            });
+        }
+
+        // Save filename on input change and keypress
+        if (saveFilenameInput) {
+            // Save on change
+            saveFilenameInput.addEventListener('change', () => {
+                const filename = saveFilenameInput.value.trim();
+                if (filename) {
+                    localStorage.setItem('lastSavedFilename', filename);
+                }
+            });
+            
+            // Save on Enter key press
+            saveFilenameInput.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    const filename = saveFilenameInput.value.trim();
+                    if (filename) {
+                        localStorage.setItem('lastSavedFilename', filename);
+                        this.saveToJson();
+                    }
+                }
             });
         }
 
@@ -62,23 +92,42 @@ export class ConfigManager {
                 height: background?.getAttr('originalHeight') || this.nodeManager.stage.height()
             };
 
-            // Create a Blob containing the JSON data
-            const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
+            // Get filename from input field
+            const saveFilenameInput = document.getElementById('saveFilename');
+            let filename = saveFilenameInput?.value.trim() || 'key-mapping-config.json';
 
-            // Create a temporary link element to trigger the download
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'key-mapping-config.json';
-            document.body.appendChild(link);
-            link.click();
+            // Ensure .json extension
+            if (!filename.toLowerCase().endsWith('.json')) {
+                filename += '.json';
+            }
 
-            // Clean up
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
+            // Save using traditional download method (no popup)
+            this.saveWithDownload(config, filename);
         } catch (error) {
             console.error('Error saving configuration:', error);
         }
+    }
+
+    saveWithDownload(config, filename) {
+        // Create a Blob containing the JSON data
+        const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        // Create a temporary link element to trigger the download
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+
+        // Clean up
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        // Remember the filename for next time
+        localStorage.setItem('lastSavedFilename', filename);
+        
+        console.log('文件已保存:', filename);
     }
 
     loadFromJson(file) {
@@ -86,7 +135,7 @@ export class ConfigManager {
         reader.onload = (event) => {
             try {
                 const config = JSON.parse(event.target.result);
-                
+
                 // Clear existing mappings
                 this.nodeManager.clearAllNodes();
 
