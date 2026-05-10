@@ -95,12 +95,19 @@ export class ConfigManager {
             const fileName = handle.name;
             localStorage.setItem('lastSavedFilename', fileName);
             
-            // Remember the directory handle for future saves (optional enhancement)
-            // Note: We can't persist the full path due to security restrictions,
-            // but we remember the filename
+            console.log('文件已保存:', fileName);
         } catch (error) {
-            if (error.name !== 'AbortError') {
+            if (error.name === 'AbortError') {
+                console.log('用户取消了保存操作');
+            } else if (error.name === 'SecurityError') {
+                console.error('安全错误：File System Access API 需要在 HTTPS 或 localhost 环境下运行');
+                alert('保存失败：当前环境不支持文件保存对话框。\n\n请确保：\n1. 使用 Chrome 或 Edge 浏览器\n2. 在 HTTPS 或 localhost 环境下运行\n\n将使用传统下载方式代替。');
+                // Fallback to download method
+                this.saveWithDownload(config, suggestedName);
+            } else {
                 console.error('Error saving with File System Access API:', error);
+                // Fallback to download method on any other error
+                this.saveWithDownload(config, suggestedName);
             }
         }
     }
