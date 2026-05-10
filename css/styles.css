@@ -554,6 +554,13 @@ input[type="number"].listening {
     padding: 6px;
 }
 
+.filename-input {
+    min-width: 200px;
+    padding: 6px;
+    font-family: monospace;
+    font-size: 0.85rem;
+}
+
 /* Footer */
 .footer {
     height: 40px;

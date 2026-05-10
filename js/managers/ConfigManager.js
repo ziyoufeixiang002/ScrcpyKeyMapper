@@ -38,12 +38,25 @@ export class ConfigManager {
             });
         }
 
-        // Save filename on input change
+        // Save filename on input change and keypress
         if (saveFilenameInput) {
+            // Save on change
             saveFilenameInput.addEventListener('change', () => {
                 const filename = saveFilenameInput.value.trim();
                 if (filename) {
                     localStorage.setItem('lastSavedFilename', filename);
+                }
+            });
+            
+            // Save on Enter key press
+            saveFilenameInput.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    const filename = saveFilenameInput.value.trim();
+                    if (filename) {
+                        localStorage.setItem('lastSavedFilename', filename);
+                        this.saveToJson();
+                    }
                 }
             });
         }
