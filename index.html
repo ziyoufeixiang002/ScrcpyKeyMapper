@@ -37,13 +37,12 @@
                     
                     <!-- File Operations -->
                     <div class="btn-group" role="group" aria-label="File Operations">
-                        <button type="button" class="btn btn-outline-danger" id="clearAllNodes" data-i18n-title="clear_all_title" title="Clear All" aria-label="Clear All Nodes">
-                            <i class="bi bi-trash3" aria-hidden="true"></i>
-                        </button>
-                        <label id="saveConfig" class="btn btn-outline-success" data-i18n-title="save_config_title" title="Save Configuration" role="button">
+                        <input type="text" class="form-control btn btn-outline-secondary text-center filename-input" id="saveFilename" 
+                            value="key-mapping-config.json" aria-label="Save Filename" style="min-width: 200px;">
+                        <button type="button" class="btn btn-outline-success" id="saveConfigBtn" data-i18n-title="save_config_title" title="Save Configuration" aria-label="Save Configuration">
                             <i class="bi bi-save" aria-hidden="true"></i>
                             <span class="ms-1" data-i18n="save">Save</span>
-                        </label>
+                        </button>
                         <label class="btn btn-outline-secondary" data-i18n-title="load_config_title" title="Load Configuration" role="button">
                             <i class="bi bi-folder2-open" aria-hidden="true"></i>
                             <span class="ms-1" data-i18n="load">Load</span>
@@ -54,6 +53,9 @@
                             <span class="ms-1" data-i18n="background">Background</span>
                             <input type="file" id="uploadBackground" accept="image/*" hidden>
                         </label>
+                        <button type="button" class="btn btn-outline-danger" id="clearAllNodes" data-i18n-title="clear_all_title" title="Clear All" aria-label="Clear All Nodes">
+                            <i class="bi bi-trash3" aria-hidden="true"></i>
+                        </button>
                     </div>
                 </div>
             </nav>

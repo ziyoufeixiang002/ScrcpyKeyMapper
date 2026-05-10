@@ -22,12 +22,29 @@ export class ConfigManager {
     }
 
     setupConfigButtons() {
-        const saveButton = document.getElementById('saveConfig');
+        const saveButton = document.getElementById('saveConfigBtn');
+        const saveFilenameInput = document.getElementById('saveFilename');
         const loadButton = document.getElementById('loadConfig');
+
+        // Load remembered filename from localStorage
+        const rememberedName = localStorage.getItem('lastSavedFilename');
+        if (rememberedName && saveFilenameInput) {
+            saveFilenameInput.value = rememberedName;
+        }
 
         if (saveButton) {
             saveButton.addEventListener('click', () => {
                 this.saveToJson();
+            });
+        }
+
+        // Save filename on input change
+        if (saveFilenameInput) {
+            saveFilenameInput.addEventListener('change', () => {
+                const filename = saveFilenameInput.value.trim();
+                if (filename) {
+                    localStorage.setItem('lastSavedFilename', filename);
+                }
             });
         }
 
@@ -62,57 +79,23 @@ export class ConfigManager {
                 height: background?.getAttr('originalHeight') || this.nodeManager.stage.height()
             };
 
-            // Get remembered filename from localStorage
-            const rememberedName = localStorage.getItem('lastSavedFilename') || 'key-mapping-config.json';
-            
-            // Try to use File System Access API if available
-            if (window.showSaveFilePicker) {
-                this.saveWithFileSystemAccess(config, rememberedName);
-            } else {
-                // Fallback to traditional download method
-                this.saveWithDownload(config, rememberedName);
+            // Get filename from input field
+            const saveFilenameInput = document.getElementById('saveFilename');
+            let filename = saveFilenameInput?.value.trim() || 'key-mapping-config.json';
+
+            // Ensure .json extension
+            if (!filename.toLowerCase().endsWith('.json')) {
+                filename += '.json';
             }
+
+            // Save using traditional download method (no popup)
+            this.saveWithDownload(config, filename);
         } catch (error) {
             console.error('Error saving configuration:', error);
         }
     }
 
-    async saveWithFileSystemAccess(config, suggestedName) {
-        try {
-            const handle = await window.showSaveFilePicker({
-                suggestedName: suggestedName,
-                types: [{
-                    description: 'JSON Files',
-                    accept: { 'application/json': ['.json'] }
-                }]
-            });
-
-            const writable = await handle.createWritable();
-            await writable.write(JSON.stringify(config, null, 2));
-            await writable.close();
-
-            // Remember the filename for next time
-            const fileName = handle.name;
-            localStorage.setItem('lastSavedFilename', fileName);
-            
-            console.log('文件已保存:', fileName);
-        } catch (error) {
-            if (error.name === 'AbortError') {
-                console.log('用户取消了保存操作');
-            } else if (error.name === 'SecurityError') {
-                console.error('安全错误：File System Access API 需要在 HTTPS 或 localhost 环境下运行');
-                alert('保存失败：当前环境不支持文件保存对话框。\n\n请确保：\n1. 使用 Chrome 或 Edge 浏览器\n2. 在 HTTPS 或 localhost 环境下运行\n\n将使用传统下载方式代替。');
-                // Fallback to download method
-                this.saveWithDownload(config, suggestedName);
-            } else {
-                console.error('Error saving with File System Access API:', error);
-                // Fallback to download method on any other error
-                this.saveWithDownload(config, suggestedName);
-            }
-        }
-    }
-
-    saveWithDownload(config, suggestedName) {
+    saveWithDownload(config, filename) {
         // Create a Blob containing the JSON data
         const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -120,7 +103,7 @@ export class ConfigManager {
         // Create a temporary link element to trigger the download
         const link = document.createElement('a');
         link.href = url;
-        link.download = suggestedName;
+        link.download = filename;
         document.body.appendChild(link);
         link.click();
 
@@ -129,7 +112,9 @@ export class ConfigManager {
         URL.revokeObjectURL(url);
         
         // Remember the filename for next time
-        localStorage.setItem('lastSavedFilename', suggestedName);
+        localStorage.setItem('lastSavedFilename', filename);
+        
+        console.log('文件已保存:', filename);
     }
 
     loadFromJson(file) {
@@ -137,7 +122,7 @@ export class ConfigManager {
         reader.onload = (event) => {
             try {
                 const config = JSON.parse(event.target.result);
-                
+
                 // Clear existing mappings
                 this.nodeManager.clearAllNodes();
 
